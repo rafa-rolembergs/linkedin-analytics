@@ -64,3 +64,24 @@
   document.body.appendChild(panel);
 
 })();
+async function teste(){
+
+    const empresa = {
+
+        nome:"Empresa Teste",
+
+        linkedin:"https://linkedin.com/company/teste",
+
+        status:"ICP",
+
+        data:new Date().toISOString()
+
+    };
+
+    await Companies.saveICP(empresa);
+
+    console.log(await Companies.allICP());
+
+}
+
+teste();
