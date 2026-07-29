@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "NoTopo Prospect Intelligence",
+  "version": "0.1.0",
+  "description": "CRM para prospecção B2B via LinkedIn desenvolvido pela NoTopo.",
+
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs"
+  ],
+
+  "host_permissions": [
+    "https://www.linkedin.com/*"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.linkedin.com/*"
+      ],
+      "js": [
+        "content.js"
+      ]
+    }
+  ],
+
+  "action": {
+    "default_title": "NoTopo Prospect Intelligence",
+    "default_popup": "popup.html"
+  }
+}
