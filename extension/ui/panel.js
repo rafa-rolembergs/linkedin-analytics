@@ -1,41 +1,115 @@
-const Panel={
+const Panel = {
 
-    create(page){
+    panel: null,
+    statusEl: null,
+    companyAreaEl: null,
+    currentContext: null,
 
-        if(document.getElementById("notopo-panel")) return;
+    create(page, context = null){
 
-        const panel=document.createElement("div");
+        if(!this.panel){
 
-        panel.id="notopo-panel";
+            this.panel = document.createElement("div");
+            this.panel.id = "notopo-panel";
+            this.panel.innerHTML = `
 
-        panel.innerHTML=`
+                <h2>NoTopo</h2>
+                <hr>
+                <b>Página</b><br>
+                <span id="notopo-page"></span>
+                <br><br>
+                <div id="company-area"></div>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <button id="mark-icp" type="button">Mark ICP</button>
+                    <button id="mark-not-icp" type="button">Mark Not ICP</button>
+                </div>
+                <div id="notopo-status" style="margin-top:10px; font-size:12px;"></div>
 
-        <h2>NoTopo</h2>
+            `;
 
-        <hr>
+            this.panel.style.position = "fixed";
+            this.panel.style.right = "20px";
+            this.panel.style.top = "120px";
+            this.panel.style.width = "280px";
+            this.panel.style.background = "#fff";
+            this.panel.style.borderRadius = "10px";
+            this.panel.style.padding = "15px";
+            this.panel.style.boxShadow = "0 5px 20px rgba(0,0,0,.2)";
+            this.panel.style.zIndex = "999999";
 
-        <b>Página</b><br>
+            document.body.appendChild(this.panel);
 
-        ${page}
+            this.statusEl = document.getElementById("notopo-status");
+            this.companyAreaEl = document.getElementById("company-area");
 
-        <br><br>
+            document.getElementById("mark-icp").addEventListener("click", () => this.saveCompany("ICP"));
+            document.getElementById("mark-not-icp").addEventListener("click", () => this.saveCompany("NOT_ICP"));
 
-        <div id="company-area"></div>
+        }
 
-        `;
+        this.render(page, context);
 
-        panel.style.position="fixed";
-        panel.style.right="20px";
-        panel.style.top="120px";
-        panel.style.width="250px";
-        panel.style.background="#fff";
-        panel.style.borderRadius="10px";
-        panel.style.padding="15px";
-        panel.style.boxShadow="0 5px 20px rgba(0,0,0,.2)";
-        panel.style.zIndex="999999";
+    },
 
-        document.body.appendChild(panel);
+    render(page, context = null){
+
+        this.currentContext = context || this.currentContext || { page, companyName: "", linkedin: "" };
+
+        const pageEl = document.getElementById("notopo-page");
+
+        if(pageEl){
+            pageEl.textContent = page || this.currentContext.page || "OUTRA";
+        }
+
+        if(this.companyAreaEl){
+            const companyName = this.currentContext.companyName || "Nenhuma empresa detectada";
+            const linkedin = this.currentContext.linkedin || "";
+
+            this.companyAreaEl.innerHTML = `
+                <b>Empresa</b><br>
+                ${companyName}<br>
+                ${linkedin ? `<a href="${linkedin}" target="_blank" rel="noopener noreferrer">Abrir LinkedIn</a>` : ""}
+            `;
+        }
+
+        if(this.statusEl){
+            this.statusEl.textContent = "";
+            this.statusEl.style.color = "#2e7d32";
+        }
+
+    },
+
+    setStatus(message, isError = false){
+
+        if(!this.statusEl) return;
+
+        this.statusEl.textContent = message;
+        this.statusEl.style.color = isError ? "#c0392b" : "#2e7d32";
+
+    },
+
+    async saveCompany(status){
+
+        if(!this.currentContext || !this.currentContext.linkedin){
+            this.setStatus("Nenhuma empresa disponível para salvar.", true);
+            return;
+        }
+
+        const company = {
+            name: this.currentContext.companyName || this.currentContext.linkedin,
+            linkedin: this.currentContext.linkedin,
+            status,
+            addedAt: new Date().toISOString()
+        };
+
+        try{
+            await Companies.save(company, status);
+            this.setStatus(`${company.name} salvo como ${status}.`, false);
+        }
+        catch(error){
+            this.setStatus("Falha ao salvar a empresa.", true);
+        }
 
     }
 
-}
+};
