@@ -1,26 +1,71 @@
 console.log("NoTopo Prospect Intelligence iniciado.");
 
-let currentUrl = "";
+let appState = {
+    currentUrl: "",
+    page: "OTHER",
+    company: null,
+    person: null
+};
+
 let observer = null;
 let refreshTimeout = null;
 
+function detectPage() {
+    if (typeof PageDetector !== "undefined") {
+        return PageDetector.getCurrentPage();
+    }
+
+    if (typeof CompanyDetector !== "undefined") {
+        return CompanyDetector.getCurrentPage();
+    }
+
+    return "OTHER";
+}
+
+function detectCompany() {
+    if (
+        typeof CompanyDetector !== "undefined" &&
+        typeof CompanyDetector.getCompany === "function"
+    ) {
+        return CompanyDetector.getCompany();
+    }
+
+    return null;
+}
+
+function detectPerson() {
+    if (
+        typeof People !== "undefined" &&
+        typeof People.getPerson === "function"
+    ) {
+        return People.getPerson();
+    }
+
+    return null;
+}
+
 function render() {
 
-    const page = CompanyDetector.getCurrentPage();
+    appState.page = detectPage();
+    appState.company = detectCompany();
+    appState.person = detectPerson();
 
-    const company = CompanyDetector.getCompany();
+    if (
+        typeof Panel !== "undefined" &&
+        typeof Panel.render === "function"
+    ) {
 
-    Panel.render({
+        Panel.render({
+            page: appState.page,
+            company: appState.company,
+            person: appState.person
+        });
 
-        page,
-
-        company
-
-    });
+    }
 
 }
 
-function refresh() {
+function refresh(force = false) {
 
     clearTimeout(refreshTimeout);
 
@@ -28,67 +73,63 @@ function refresh() {
 
         const url = window.location.href;
 
-        if (url === currentUrl) {
-
+        if (!force && url === appState.currentUrl) {
+            render();
             return;
-
         }
 
-        currentUrl = url;
+        appState.currentUrl = url;
 
         render();
 
-    }, 150);
+    }, 200);
 
 }
 
 function observeNavigation() {
 
-    const pushState = history.pushState;
+    const originalPushState = history.pushState;
 
     history.pushState = function (...args) {
 
-        const result = pushState.apply(this, args);
+        const result = originalPushState.apply(this, args);
 
-        refresh();
+        refresh(true);
 
         return result;
 
     };
 
-    const replaceState = history.replaceState;
+    const originalReplaceState = history.replaceState;
 
     history.replaceState = function (...args) {
 
-        const result = replaceState.apply(this, args);
+        const result = originalReplaceState.apply(this, args);
 
-        refresh();
+        refresh(true);
 
         return result;
 
     };
 
-    window.addEventListener("popstate", refresh);
+    window.addEventListener("popstate", () => refresh(true));
 
     observer = new MutationObserver(() => {
 
-        refresh();
+        refresh(false);
 
     });
 
     observer.observe(document.body, {
-
         childList: true,
-
         subtree: true
-
     });
 
 }
 
 function init() {
 
-    currentUrl = window.location.href;
+    appState.currentUrl = window.location.href;
 
     render();
 
