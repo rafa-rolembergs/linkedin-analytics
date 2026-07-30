@@ -1,36 +1,45 @@
 document.addEventListener("DOMContentLoaded", async () => {
 
-    console.log("Dashboard iniciado");
+    console.log("PASSO 1 - Dashboard iniciou");
 
     const result = await new Promise(resolve => {
         chrome.storage.local.get(["companies"], resolve);
     });
 
-    console.log(result);
+    console.log("PASSO 2 - Resultado do storage:", result);
 
     const companies = result.companies || [];
 
-    document.getElementById("companies-count").textContent =
-        companies.filter(c => c.status === "ICP").length;
+    console.log("PASSO 3 - Empresas encontradas:", companies);
+
+    const icps = companies.filter(c => c.status === "ICP");
+
+    console.log("PASSO 4 - Empresas ICP:", icps);
+
+    document.getElementById("companies-count").textContent = icps.length;
 
     const tbody = document.getElementById("companies-table");
 
+    console.log("PASSO 5 - tbody:", tbody);
+
     tbody.innerHTML = "";
 
-    companies
-        .filter(c => c.status === "ICP")
-        .forEach(company => {
+    icps.forEach(company => {
 
-            const tr = document.createElement("tr");
+        console.log("Adicionando empresa:", company.name);
 
-            tr.innerHTML = `
-                <td>${company.name}</td>
-                <td>${company.status}</td>
-                <td>${new Date(company.createdAt).toLocaleDateString()}</td>
-            `;
+        const tr = document.createElement("tr");
 
-            tbody.appendChild(tr);
+        tr.innerHTML = `
+            <td>${company.name}</td>
+            <td>${company.status}</td>
+            <td>${new Date(company.createdAt).toLocaleDateString()}</td>
+        `;
 
-        });
+        tbody.appendChild(tr);
+
+    });
+
+    console.log("PASSO 6 - Fim");
 
 });
