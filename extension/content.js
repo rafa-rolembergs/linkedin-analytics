@@ -9,6 +9,7 @@ let appState = {
 
 let observer = null;
 let refreshTimeout = null;
+let connectionSyncTimeout = null;
 
 function detectPage() {
 
@@ -54,6 +55,87 @@ function detectPerson() {
 
 }
 
+async function syncConnectionStatus() {
+
+    if (!appState.person) return;
+
+    clearTimeout(connectionSyncTimeout);
+
+    connectionSyncTimeout = setTimeout(async () => {
+
+        const buttons = [...document.querySelectorAll("button")];
+
+        const hasPending = buttons.some(button =>
+            ["Pendente", "Pending"].includes(button.innerText.trim())
+        );
+
+        const hasMessage = buttons.some(button =>
+            ["Mensagem", "Message"].includes(button.innerText.trim())
+        );
+
+        if (hasPending) {
+
+            await Connections.updateStatus(
+                appState.person.linkedin,
+                "INVITED"
+            );
+
+            return;
+
+        }
+
+        if (hasMessage) {
+
+            await Connections.updateStatus(
+                appState.person.linkedin,
+                "CONNECTED"
+            );
+
+        }
+
+    }, 500);
+
+}
+
+function observeInviteButtons() {
+
+    document.addEventListener("click", async (event) => {
+
+        const button = event.target.closest("button");
+
+        if (!button) return;
+
+        const text = button.innerText.trim();
+
+        if (
+            text === "Enviar sem nota" ||
+            text === "Enviar"
+        ) {
+
+            if (!appState.person) return;
+
+            const person = await People.find(
+                appState.person.linkedin
+            );
+
+            if (!person) return;
+
+            await Connections.save(
+                person,
+                "INVITED"
+            );
+
+            console.log(
+                "Convite enviado:",
+                person.name
+            );
+
+        }
+
+    });
+
+}
+
 function render() {
 
     appState.page = detectPage();
@@ -62,8 +144,6 @@ function render() {
 
     appState.company = detectCompany();
 
-    // Se estiver em uma página de pessoa,
-    // utiliza a empresa encontrada no perfil.
     if (
         !appState.company &&
         appState.person &&
@@ -88,6 +168,15 @@ function render() {
             person: appState.person
 
         });
+
+    }
+
+    if (
+        typeof Connections !== "undefined" &&
+        appState.person
+    ) {
+
+        syncConnectionStatus();
 
     }
 
@@ -165,6 +254,8 @@ function init() {
     render();
 
     observeNavigation();
+
+    observeInviteButtons();
 
 }
 

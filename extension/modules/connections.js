@@ -34,19 +34,29 @@ const Connections = {
 
         if (existing >= 0) {
 
-            connections[existing] = {
+            const connection = connections[existing];
 
-                ...connections[existing],
+            connection.status = status;
 
-                status,
+            connection.updatedAt = now;
 
-                updatedAt: now,
+            if (
+                status === "INVITED" &&
+                !connection.invitedAt
+            ) {
 
-                acceptedAt: status === "CONNECTED"
-                    ? (connections[existing].acceptedAt || now)
-                    : connections[existing].acceptedAt
+                connection.invitedAt = now;
 
-            };
+            }
+
+            if (
+                status === "CONNECTED" &&
+                !connection.connectedAt
+            ) {
+
+                connection.connectedAt = now;
+
+            }
 
         } else {
 
@@ -60,15 +70,19 @@ const Connections = {
 
                 personLinkedin: person.linkedin,
 
-                personName: person.name,
+                personName: person.name || "",
 
                 status,
 
-                invitedAt: now,
+                invitedAt:
+                    status === "INVITED"
+                        ? now
+                        : null,
 
-                acceptedAt: status === "CONNECTED"
-                    ? now
-                    : null,
+                connectedAt:
+                    status === "CONNECTED"
+                        ? now
+                        : null,
 
                 createdAt: now,
 
@@ -90,7 +104,13 @@ const Connections = {
 
     async updateStatus(personLinkedin, status) {
 
-        const connection = await this.find(personLinkedin);
+        const connections = await this.getAll();
+
+        const connection = connections.find(
+
+            c => c.personLinkedin === personLinkedin
+
+        );
 
         if (!connection) {
 
@@ -98,17 +118,39 @@ const Connections = {
 
         }
 
-        return await this.save({
+        const now = new Date().toISOString();
 
-            id: connection.personId,
+        connection.status = status;
 
-            companyId: connection.companyId,
+        connection.updatedAt = now;
 
-            linkedin: connection.personLinkedin,
+        if (
+            status === "INVITED" &&
+            !connection.invitedAt
+        ) {
 
-            name: connection.personName
+            connection.invitedAt = now;
 
-        }, status);
+        }
+
+        if (
+            status === "CONNECTED" &&
+            !connection.connectedAt
+        ) {
+
+            connection.connectedAt = now;
+
+        }
+
+        await Storage.save(
+
+            this.STORAGE_KEY,
+
+            connections
+
+        );
+
+        return connection;
 
     },
 

@@ -18,12 +18,17 @@ async function loadSummary() {
 
         const companies = await Companies.getICP();
 
+        const people = await People.getAll();
+
         const invited = await Connections.getInvited();
 
         const connected = await Connections.getConnected();
 
         document.getElementById("popup-companies").textContent =
             companies.length;
+
+        document.getElementById("popup-people").textContent =
+            people.length;
 
         document.getElementById("popup-connections").textContent =
             invited.length;
