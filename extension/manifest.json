@@ -26,11 +26,12 @@
         "https://www.linkedin.com/*"
       ],
       "js": [
-        "storage.js",
-        "modules/companies.js",
-        "modules/companyDetector.js",
-        "ui/panel.js",
-        "content.js"
+       "storage.js",
+    "modules/companies.js",
+    "modules/companyDetector.js",
+    "modules/personDetector.js",
+    "ui/panel.js",
+    "content.js"
       ],
       "css": [
         "style.css"
