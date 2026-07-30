@@ -2,26 +2,34 @@ const CompanyDetector = {
 
     getCurrentPage() {
 
-        const url = window.location.pathname.toLowerCase();
+        const path = window.location.pathname.toLowerCase();
 
-        if (url.startsWith("/company/")) {
+        if (path.startsWith("/company/")) {
             return "COMPANY";
         }
 
-        if (url.startsWith("/search/results/companies")) {
+        if (path.startsWith("/search/results/companies")) {
             return "COMPANY_SEARCH";
         }
 
-        if (url.startsWith("/search/results/people")) {
+        if (path.startsWith("/search/results/people")) {
             return "PEOPLE_SEARCH";
         }
 
-        if (url.startsWith("/mynetwork")) {
+        if (path.startsWith("/in/")) {
+            return "PERSON";
+        }
+
+        if (path.startsWith("/mynetwork")) {
             return "MY_NETWORK";
         }
 
-        if (url.startsWith("/messaging")) {
+        if (path.startsWith("/messaging")) {
             return "MESSAGING";
+        }
+
+        if (path === "/" || path === "/feed/") {
+            return "HOME";
         }
 
         return "OTHER";
@@ -42,7 +50,9 @@ const CompanyDetector = {
 
     getCompanyName() {
 
-        const selectors = [
+        // ===== Layout antigo =====
+
+        const oldSelectors = [
 
             "h1",
             ".org-top-card-summary__title",
@@ -52,15 +62,71 @@ const CompanyDetector = {
 
         ];
 
-        for (const selector of selectors) {
+        for (const selector of oldSelectors) {
 
             const element = document.querySelector(selector);
 
-            if (element && element.textContent.trim()) {
+            if (element?.textContent.trim()) {
 
                 return element.textContent.trim();
 
             }
+
+        }
+
+        // ===== Novo layout do LinkedIn =====
+
+        const companyLink = document.querySelector('a[href*="/company/"]');
+
+        if (companyLink) {
+
+            const parent = companyLink.parentElement;
+
+            if (parent) {
+
+                const title = parent.querySelector("p");
+
+                if (title?.textContent.trim()) {
+
+                    return title.textContent.trim();
+
+                }
+
+            }
+
+        }
+
+        // ===== Fallback pelo aria-label =====
+
+        const ariaElement = document.querySelector('[aria-label*="empresa"]');
+
+        if (ariaElement) {
+
+            const label = ariaElement.getAttribute("aria-label");
+
+            if (label) {
+
+                const match = label.match(/empresa\s+(.+)$/i);
+
+                if (match) {
+
+                    return match[1].trim();
+
+                }
+
+            }
+
+        }
+
+        // ===== Último fallback =====
+
+        const title = document.title
+            .replace(/\s*\|\s*LinkedIn.*$/i, "")
+            .trim();
+
+        if (title.length > 0) {
+
+            return title;
 
         }
 
