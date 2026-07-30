@@ -1,3 +1,4 @@
+console.log("PASSO 1 - companies.js carregou");
 const Companies = {
 
     STORAGE_KEY: "companies",
@@ -138,3 +139,4 @@ const Companies = {
     }
 
 };
+console.log("PASSO 2 - Companies criado:", Companies);
