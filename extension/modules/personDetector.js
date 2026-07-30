@@ -140,23 +140,27 @@ const PersonDetector = {
             return null;
         }
 
-        // Procura primeiro na seção de experiência
-        const companyLinks = document.querySelectorAll('a[href*="/company/"]');
+        // ==================================================
+        // NOVO LAYOUT DO LINKEDIN
+        // Empresa exibida no topo do perfil
+        // ==================================================
 
-        for (const link of companyLinks) {
+        const logo = document.querySelector('img[src*="company-logo"]');
 
-            const paragraphs = link.querySelectorAll("p");
+        if (logo) {
 
-            if (paragraphs.length > 0) {
+            const card = logo.closest('div[role="button"]');
 
-                const name = paragraphs[0].innerText.trim();
+            if (card) {
+
+                const name = card.querySelector("span")?.innerText?.trim();
 
                 if (name) {
 
                     return {
 
                         name,
-                        linkedin: link.href.split("?")[0]
+                        linkedin: ""
 
                     };
 
@@ -166,25 +170,35 @@ const PersonDetector = {
 
         }
 
-        // Fallback: cartão superior (quando existir)
-        const companyCard = document.querySelector(
-            'img[src*="company-logo"]'
-        )?.closest('[role="button"]');
+        // ==================================================
+        // LAYOUT ANTIGO
+        // Empresa na seção Experiência
+        // ==================================================
 
-        if (companyCard) {
+        const links = document.querySelectorAll(
+            'a[href*="/company/"]'
+        );
 
-            const name = companyCard.querySelector("span")?.innerText?.trim();
+        for (const link of links) {
 
-            if (name) {
+            const paragraphs = link.querySelectorAll("p");
 
-                return {
-
-                    name,
-                    linkedin: ""
-
-                };
-
+            if (!paragraphs.length) {
+                continue;
             }
+
+            const name = paragraphs[0].innerText.trim();
+
+            if (!name) {
+                continue;
+            }
+
+            return {
+
+                name,
+                linkedin: link.href.split("?")[0]
+
+            };
 
         }
 
