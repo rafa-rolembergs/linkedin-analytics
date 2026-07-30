@@ -1,73 +1,36 @@
-const Dashboard = {
+document.addEventListener("DOMContentLoaded", async () => {
 
-    async load() {
+    console.log("Dashboard iniciado");
 
-        await this.updateCards();
+    const result = await new Promise(resolve => {
+        chrome.storage.local.get(["companies"], resolve);
+    });
 
-        await this.loadCompanies();
+    console.log(result);
 
-    },
+    const companies = result.companies || [];
 
-    async updateCards() {
+    document.getElementById("companies-count").textContent =
+        companies.filter(c => c.status === "ICP").length;
 
-        document.getElementById("companies-count").textContent =
-            (await Companies.getICP()).length;
+    const tbody = document.getElementById("companies-table");
 
-        document.getElementById("invited-count").textContent =
-            (await Connections.getInvited()).length;
+    tbody.innerHTML = "";
 
-        document.getElementById("connected-count").textContent =
-            (await Connections.getConnected()).length;
+    companies
+        .filter(c => c.status === "ICP")
+        .forEach(company => {
 
-        document.getElementById("script1-count").textContent =
-            (await Messages.getScript(1)).length;
+            const tr = document.createElement("tr");
 
-        document.getElementById("script2-count").textContent =
-            (await Messages.getScript(2)).length;
-
-        document.getElementById("script3-count").textContent =
-            (await Messages.getScript(3)).length;
-
-    },
-
-    async loadCompanies() {
-
-        const tbody = document.getElementById(
-
-            "companies-table"
-
-        );
-
-        tbody.innerHTML = "";
-
-        const companies = await Companies.getICP();
-
-        companies.forEach(company => {
-
-            const row = document.createElement("tr");
-
-            row.innerHTML = `
-
+            tr.innerHTML = `
                 <td>${company.name}</td>
-
                 <td>${company.status}</td>
-
                 <td>${new Date(company.createdAt).toLocaleDateString()}</td>
-
             `;
 
-            tbody.appendChild(row);
+            tbody.appendChild(tr);
 
         });
 
-    }
-
-};
-
-document.addEventListener(
-
-    "DOMContentLoaded",
-
-    () => Dashboard.load()
-
-);
+});
