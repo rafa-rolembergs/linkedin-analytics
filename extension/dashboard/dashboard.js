@@ -1,3 +1,4 @@
+console.log("PASSOU NO DASHBOARD");
 document.addEventListener("DOMContentLoaded", async () => {
 
     console.log("PASSO 1 - Dashboard iniciou");
