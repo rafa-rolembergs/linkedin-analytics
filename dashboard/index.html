@@ -1,21 +1,143 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Notopo Dashboard</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <main class="dashboard-shell">
-      <header>
-        <h1>Notopo Prospect Intelligence</h1>
-        <p>Dashboard placeholder for future analytics views.</p>
-      </header>
-      <section id="dashboardContent">
-        <p>Content will be added here.</p>
-      </section>
+
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>NoTopo Prospect Intelligence</title>
+
+    <link rel="stylesheet" href="dashboard.css">
+
+</head>
+
+<body>
+
+    <header class="header">
+
+        <h1>NoTopo Prospect Intelligence</h1>
+
+        <div class="filters">
+
+            <label>
+
+                Período
+
+                <select id="period-filter">
+
+                    <option value="all">Todo período</option>
+
+                    <option value="today">Hoje</option>
+
+                    <option value="week">Últimos 7 dias</option>
+
+                    <option value="month">Últimos 30 dias</option>
+
+                </select>
+
+            </label>
+
+        </div>
+
+    </header>
+
+    <main>
+
+        <section class="cards">
+
+            <div class="card">
+
+                <span>Empresas Prospectadas</span>
+
+                <h2 id="companies-count">0</h2>
+
+            </div>
+
+            <div class="card">
+
+                <span>Convites Enviados</span>
+
+                <h2 id="invited-count">0</h2>
+
+            </div>
+
+            <div class="card">
+
+                <span>Conexões Aceitas</span>
+
+                <h2 id="connected-count">0</h2>
+
+            </div>
+
+            <div class="card">
+
+                <span>Script 1</span>
+
+                <h2 id="script1-count">0</h2>
+
+            </div>
+
+            <div class="card">
+
+                <span>Script 2</span>
+
+                <h2 id="script2-count">0</h2>
+
+            </div>
+
+            <div class="card">
+
+                <span>Script 3</span>
+
+                <h2 id="script3-count">0</h2>
+
+            </div>
+
+        </section>
+
+        <section class="table-section">
+
+            <h2>Empresas ICP</h2>
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Empresa</th>
+
+                        <th>Status</th>
+
+                        <th>Data</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="companies-table">
+
+                </tbody>
+
+            </table>
+
+        </section>
+
     </main>
-    <script src="app.js"></script>
-  </body>
+
+    <script src="../extension/storage.js"></script>
+
+    <script src="../extension/modules/companies.js"></script>
+
+    <script src="../extension/modules/people.js"></script>
+
+    <script src="../extension/modules/connections.js"></script>
+
+    <script src="../extension/modules/messages.js"></script>
+
+    <script src="dashboard.js"></script>
+
+</body>
+
 </html>

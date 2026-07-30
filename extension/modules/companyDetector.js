@@ -1,75 +1,96 @@
 const CompanyDetector = {
 
-    getPage(url = window.location.href){
+    getCurrentPage() {
 
-        const href = (url || "").toLowerCase();
+        const url = window.location.pathname.toLowerCase();
 
-        if(href.includes("/search/results/companies")) return "EMPRESAS";
-        if(href.includes("/search/results/people")) return "PESSOAS";
-        if(href.includes("/messaging")) return "INBOX";
-        if(href.includes("/company/")) return "EMPRESA";
+        if (url.startsWith("/company/")) {
+            return "COMPANY";
+        }
 
-        return "OUTRA";
+        if (url.startsWith("/search/results/companies")) {
+            return "COMPANY_SEARCH";
+        }
+
+        if (url.startsWith("/search/results/people")) {
+            return "PEOPLE_SEARCH";
+        }
+
+        if (url.startsWith("/mynetwork")) {
+            return "MY_NETWORK";
+        }
+
+        if (url.startsWith("/messaging")) {
+            return "MESSAGING";
+        }
+
+        return "OTHER";
 
     },
 
-    getName(documentRef = document){
+    isCompanyPage() {
+
+        return this.getCurrentPage() === "COMPANY";
+
+    },
+
+    getLinkedinUrl() {
+
+        return window.location.href.split("?")[0];
+
+    },
+
+    getCompanyName() {
 
         const selectors = [
+
             "h1",
-            "main h1",
+            ".org-top-card-summary__title",
             ".org-top-card h1",
-            ".top-card h1",
-            "[data-view-name='profile-card'] h1"
+            ".top-card-layout__title",
+            ".top-card h1"
+
         ];
 
-        for(const selector of selectors){
+        for (const selector of selectors) {
 
-            const element = documentRef.querySelector(selector);
+            const element = document.querySelector(selector);
 
-            if(element && element.innerText && element.innerText.trim()){
-                return element.innerText.trim();
+            if (element && element.textContent.trim()) {
+
+                return element.textContent.trim();
+
             }
 
         }
 
-        const title = documentRef.title || "";
-
-        if(title){
-            return title.replace(/\s*-\s*LinkedIn$/i, "").trim();
-        }
-
-        const meta = documentRef.querySelector('meta[property="og:title"]');
-
-        if(meta && meta.content){
-            return meta.content.trim();
-        }
-
-        return "";
+        return null;
 
     },
 
-    getLinkedin(url = window.location.href){
+    getCompany() {
 
-        return url || location.href;
+        if (!this.isCompanyPage()) {
 
-    },
+            return null;
 
-    getContext(documentRef = document, url = window.location.href){
+        }
 
-        const page = this.getPage(url);
+        const name = this.getCompanyName();
+
+        if (!name) {
+
+            return null;
+
+        }
 
         return {
-            page,
-            companyName: this.getName(documentRef),
-            linkedin: this.getLinkedin(url),
-            isCompanyPage: page === "EMPRESA"
+
+            name,
+            linkedin: this.getLinkedinUrl()
+
         };
 
     }
 
 };
-
-if(typeof module !== "undefined"){
-    module.exports = CompanyDetector;
-}

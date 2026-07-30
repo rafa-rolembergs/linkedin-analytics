@@ -1,26 +1,14 @@
 const Companies = {
 
-    async getICP(){
+    STORAGE_KEY: "companies",
 
-        return new Promise(resolve=>{
+    async getAll() {
 
-            chrome.storage.local.get(["icp"],result=>{
+        return new Promise(resolve => {
 
-                resolve(result.icp || []);
+            chrome.storage.local.get([this.STORAGE_KEY], result => {
 
-            });
-
-        });
-
-    },
-
-    async getNotICP(){
-
-        return new Promise(resolve=>{
-
-            chrome.storage.local.get(["not_icp"],result=>{
-
-                resolve(result.not_icp || []);
+                resolve(result[this.STORAGE_KEY] || []);
 
             });
 
@@ -28,34 +16,125 @@ const Companies = {
 
     },
 
-    async save(company,status){
+    async find(linkedin) {
 
-        const key = status === "ICP" ? "icp" : "not_icp";
+        const companies = await this.getAll();
 
-        return new Promise(resolve=>{
+        return companies.find(company => company.linkedin === linkedin) || null;
 
-            chrome.storage.local.get([key],result=>{
+    },
 
-                let list = result[key] || [];
+    async save(company, status) {
 
-                const exists = list.find(x=>x.linkedin===company.linkedin);
+        return new Promise(resolve => {
 
-                if(!exists){
+            chrome.storage.local.get([this.STORAGE_KEY], result => {
 
-                    list.push(company);
+                const companies = result[this.STORAGE_KEY] || [];
+
+                const now = new Date().toISOString();
+
+                const index = companies.findIndex(c => c.linkedin === company.linkedin);
+
+                if (index >= 0) {
+
+                    companies[index] = {
+
+                        ...companies[index],
+
+                        ...company,
+
+                        status,
+
+                        updatedAt: now
+
+                    };
+
+                } else {
+
+                    companies.push({
+
+                        id: crypto.randomUUID(),
+
+                        name: company.name,
+                        linkedin: company.linkedin,
+                        status,
+
+                        createdAt: now,
+                        updatedAt: now
+
+                    });
 
                 }
 
                 chrome.storage.local.set({
 
-                    [key]:list
+                    [this.STORAGE_KEY]: companies
 
-                },()=>resolve());
+                }, () => resolve());
 
             });
 
         });
 
+    },
+
+    async updateStatus(linkedin, status) {
+
+        const company = await this.find(linkedin);
+
+        if (!company) return;
+
+        await this.save(company, status);
+
+    },
+
+    async getICP() {
+
+        const companies = await this.getAll();
+
+        return companies.filter(company => company.status === "ICP");
+
+    },
+
+    async getNotICP() {
+
+        const companies = await this.getAll();
+
+        return companies.filter(company => company.status === "NOT_ICP");
+
+    },
+
+    async remove(linkedin) {
+
+        return new Promise(resolve => {
+
+            chrome.storage.local.get([this.STORAGE_KEY], result => {
+
+                const companies = (result[this.STORAGE_KEY] || []).filter(
+
+                    company => company.linkedin !== linkedin
+
+                );
+
+                chrome.storage.local.set({
+
+                    [this.STORAGE_KEY]: companies
+
+                }, () => resolve());
+
+            });
+
+        });
+
+    },
+
+    async count() {
+
+        const companies = await this.getAll();
+
+        return companies.length;
+
     }
 
-}
+};

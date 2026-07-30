@@ -1,22 +1,234 @@
-/* Placeholder styles for the extension popup. */
+/*
+==========================================================
+NoTopo Prospect Intelligence
+Global Styles
+==========================================================
+*/
 
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f5f7fb;
-  color: #1f2937;
+#notopo-panel{
+
+    position:fixed;
+
+    top:120px;
+
+    right:20px;
+
+    width:300px;
+
+    background:#ffffff;
+
+    border:1px solid #d9dee8;
+
+    border-radius:12px;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.15);
+
+    z-index:999999;
+
+    overflow:hidden;
+
+    font-family:Arial,Helvetica,sans-serif;
+
+    color:#1f2937;
+
 }
 
-.popup-container {
-  width: 280px;
-  padding: 16px;
+/* ===================================================== */
+
+#notopo-panel *{
+
+    box-sizing:border-box;
+
 }
 
-button {
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  background: #2563eb;
-  color: white;
-  cursor: pointer;
+/* ===================================================== */
+
+.notopo-header{
+
+    background:#0A66C2;
+
+    color:#ffffff;
+
+    padding:14px 18px;
+
+}
+
+.notopo-header h2{
+
+    margin:0;
+
+    font-size:18px;
+
+    font-weight:600;
+
+}
+
+/* ===================================================== */
+
+.notopo-section{
+
+    padding:14px 18px;
+
+    border-bottom:1px solid #eceff4;
+
+}
+
+.notopo-section strong{
+
+    display:block;
+
+    margin-bottom:6px;
+
+    color:#475569;
+
+    font-size:13px;
+
+    font-weight:600;
+
+}
+
+/* ===================================================== */
+
+#notopo-page{
+
+    font-size:14px;
+
+    font-weight:500;
+
+}
+
+/* ===================================================== */
+
+#notopo-company{
+
+    word-break:break-word;
+
+    line-height:1.5;
+
+    font-size:14px;
+
+}
+
+#notopo-company small{
+
+    display:block;
+
+    margin-top:6px;
+
+    color:#64748b;
+
+}
+
+/* ===================================================== */
+
+.notopo-actions{
+
+    display:flex;
+
+    gap:10px;
+
+    padding:18px;
+
+}
+
+/* ===================================================== */
+
+.notopo-actions button{
+
+    flex:1;
+
+    border:none;
+
+    border-radius:8px;
+
+    padding:10px;
+
+    cursor:pointer;
+
+    font-size:13px;
+
+    font-weight:600;
+
+    transition:.2s;
+
+}
+
+/* ===================================================== */
+
+#notopo-icp{
+
+    background:#16a34a;
+
+    color:#ffffff;
+
+}
+
+#notopo-icp:hover{
+
+    background:#15803d;
+
+}
+
+/* ===================================================== */
+
+#notopo-not-icp{
+
+    background:#dc2626;
+
+    color:#ffffff;
+
+}
+
+#notopo-not-icp:hover{
+
+    background:#b91c1c;
+
+}
+
+/* ===================================================== */
+
+#notopo-status{
+
+    min-height:22px;
+
+    padding:0 18px 18px;
+
+    font-size:13px;
+
+    font-weight:600;
+
+}
+
+/* ===================================================== */
+
+.notopo-success{
+
+    color:#15803d;
+
+}
+
+.notopo-error{
+
+    color:#b91c1c;
+
+}
+
+.notopo-info{
+
+    color:#0A66C2;
+
+}
+
+/* ===================================================== */
+
+@media(max-width:1200px){
+
+    #notopo-panel{
+
+        width:270px;
+
+        right:10px;
+
+    }
+
 }

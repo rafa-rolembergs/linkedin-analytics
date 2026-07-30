@@ -1,12 +1,12 @@
 const Storage = {
 
-    async get(key){
+    async get(key) {
 
-        return new Promise(resolve=>{
+        return new Promise(resolve => {
 
-            chrome.storage.local.get([key],result=>{
+            chrome.storage.local.get([key], result => {
 
-                resolve(result[key] || []);
+                resolve(result[key] ?? []);
 
             });
 
@@ -14,18 +14,38 @@ const Storage = {
 
     },
 
-    async save(key,data){
+    async save(key, data) {
 
-        return new Promise(resolve=>{
+        return new Promise(resolve => {
 
             chrome.storage.local.set({
 
-                [key]:data
+                [key]: data
 
-            },()=>resolve());
+            }, () => resolve());
+
+        });
+
+    },
+
+    async remove(key) {
+
+        return new Promise(resolve => {
+
+            chrome.storage.local.remove(key, () => resolve());
+
+        });
+
+    },
+
+    async clear() {
+
+        return new Promise(resolve => {
+
+            chrome.storage.local.clear(() => resolve());
 
         });
 
     }
 
-}
+};

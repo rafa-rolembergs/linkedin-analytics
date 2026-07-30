@@ -1,43 +1,112 @@
 const Companies = {
 
-    async allICP(){
+    STORAGE_KEY: "companies",
 
-        return await Storage.get("icp");
+    async getAll() {
 
-    },
+        const companies = await Storage.get(this.STORAGE_KEY);
 
-    async allNotICP(){
-
-        return await Storage.get("not_icp");
+        return companies || [];
 
     },
 
-    async saveICP(company){
+    async find(linkedin) {
 
-        let list = await this.allICP();
+        const companies = await this.getAll();
 
-        const exists = list.find(c=>c.linkedin===company.linkedin);
-
-        if(exists) return;
-
-        list.push(company);
-
-        await Storage.save("icp",list);
+        return companies.find(company => company.linkedin === linkedin) || null;
 
     },
 
-    async saveNotICP(company){
+    async save(company, status) {
 
-        let list = await this.allNotICP();
+        const companies = await this.getAll();
 
-        const exists = list.find(c=>c.linkedin===company.linkedin);
+        const now = new Date().toISOString();
 
-        if(exists) return;
+        const index = companies.findIndex(c => c.linkedin === company.linkedin);
 
-        list.push(company);
+        if (index >= 0) {
 
-        await Storage.save("not_icp",list);
+            companies[index] = {
+
+                ...companies[index],
+                ...company,
+                status,
+                updatedAt: now
+
+            };
+
+        } else {
+
+            companies.push({
+
+                id: crypto.randomUUID(),
+
+                name: company.name,
+
+                linkedin: company.linkedin,
+
+                status,
+
+                createdAt: now,
+
+                updatedAt: now
+
+            });
+
+        }
+
+        await Storage.save(this.STORAGE_KEY, companies);
+
+    },
+
+    async updateStatus(linkedin, status) {
+
+        const company = await this.find(linkedin);
+
+        if (!company) return;
+
+        await this.save(company, status);
+
+    },
+
+    async getICP() {
+
+        const companies = await this.getAll();
+
+        return companies.filter(company => company.status === "ICP");
+
+    },
+
+    async getNotICP() {
+
+        const companies = await this.getAll();
+
+        return companies.filter(company => company.status === "NOT_ICP");
+
+    },
+
+    async remove(linkedin) {
+
+        const companies = await this.getAll();
+
+        const filtered = companies.filter(
+
+            company => company.linkedin !== linkedin
+
+        );
+
+        await Storage.save(this.STORAGE_KEY, filtered);
+
+    },
+
+    async count() {
+
+        const companies = await this.getAll();
+
+        return companies.length;
 
     }
 
-}
+};

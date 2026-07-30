@@ -1,17 +1,111 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Notopo Prospect Intelligence</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <main class="popup-container">
-      <h1>Notopo Prospect Intelligence</h1>
-      <p>Extension popup placeholder.</p>
-      <button id="inspectButton">Inspect Page</button>
+
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NoTopo Prospect Intelligence</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <main class="popup">
+
+        <header class="popup-header">
+
+            <h1>NoTopo</h1>
+
+            <span class="popup-version">
+
+                Prospect Intelligence
+
+            </span>
+
+        </header>
+
+        <section class="popup-status">
+
+            <div class="status-online">
+
+                ● Extensão ativa
+
+            </div>
+
+        </section>
+
+        <section class="popup-summary">
+
+            <div class="summary-item">
+
+                <span>Empresas ICP</span>
+
+                <strong id="popup-companies">
+
+                    --
+
+                </strong>
+
+            </div>
+
+            <div class="summary-item">
+
+                <span>Convites</span>
+
+                <strong id="popup-connections">
+
+                    --
+
+                </strong>
+
+            </div>
+
+            <div class="summary-item">
+
+                <span>Conexões</span>
+
+                <strong id="popup-accepted">
+
+                    --
+
+                </strong>
+
+            </div>
+
+        </section>
+
+        <section class="popup-actions">
+
+            <button id="open-dashboard">
+
+                Abrir Dashboard
+
+            </button>
+
+            <button id="open-linkedin">
+
+                Abrir LinkedIn
+
+            </button>
+
+        </section>
+
     </main>
+
+    <script src="storage.js"></script>
+
+    <script src="modules/companies.js"></script>
+
+    <script src="modules/connections.js"></script>
+
     <script src="popup.js"></script>
-  </body>
+
+</body>
+
 </html>
