@@ -11,6 +11,7 @@ let observer = null;
 let refreshTimeout = null;
 
 function detectPage() {
+
     if (typeof PageDetector !== "undefined") {
         return PageDetector.getCurrentPage();
     }
@@ -20,35 +21,58 @@ function detectPage() {
     }
 
     return "OTHER";
+
 }
 
 function detectCompany() {
+
     if (
         typeof CompanyDetector !== "undefined" &&
         typeof CompanyDetector.getCompany === "function"
     ) {
+
         return CompanyDetector.getCompany();
+
     }
 
     return null;
+
 }
 
 function detectPerson() {
+
     if (
-        typeof People !== "undefined" &&
-        typeof People.getPerson === "function"
+        typeof PersonDetector !== "undefined" &&
+        typeof PersonDetector.getPerson === "function"
     ) {
-        return People.getPerson();
+
+        return PersonDetector.getPerson();
+
     }
 
     return null;
+
 }
 
 function render() {
 
     appState.page = detectPage();
-    appState.company = detectCompany();
+
     appState.person = detectPerson();
+
+    appState.company = detectCompany();
+
+    // Se estiver em uma página de pessoa,
+    // utiliza a empresa encontrada no perfil.
+    if (
+        !appState.company &&
+        appState.person &&
+        appState.person.company
+    ) {
+
+        appState.company = appState.person.company;
+
+    }
 
     if (
         typeof Panel !== "undefined" &&
@@ -56,9 +80,13 @@ function render() {
     ) {
 
         Panel.render({
+
             page: appState.page,
+
             company: appState.company,
+
             person: appState.person
+
         });
 
     }
@@ -74,8 +102,11 @@ function refresh(force = false) {
         const url = window.location.href;
 
         if (!force && url === appState.currentUrl) {
+
             render();
+
             return;
+
         }
 
         appState.currentUrl = url;

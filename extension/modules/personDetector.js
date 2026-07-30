@@ -2,7 +2,7 @@ const PersonDetector = {
 
     getCurrentPage() {
 
-        const path = window.location.pathname;
+        const path = window.location.pathname.toLowerCase();
 
         if (path.startsWith("/in/")) {
             return "PROFILE";
@@ -12,11 +12,11 @@ const PersonDetector = {
             return "PEOPLE_SEARCH";
         }
 
-        if (path.startsWith("/mynetwork/")) {
+        if (path.startsWith("/mynetwork")) {
             return "MY_NETWORK";
         }
 
-        if (path.startsWith("/messaging/")) {
+        if (path.startsWith("/messaging")) {
             return "MESSAGING";
         }
 
@@ -108,9 +108,87 @@ const PersonDetector = {
             return "";
         }
 
-        const image = document.querySelector(".pv-top-card-profile-picture__image");
+        const selectors = [
 
-        return image?.src || "";
+            ".pv-top-card-profile-picture__image",
+
+            'img[alt*="foto"]',
+
+            'img[alt*="Photo"]'
+
+        ];
+
+        for (const selector of selectors) {
+
+            const image = document.querySelector(selector);
+
+            if (image?.src) {
+
+                return image.src;
+
+            }
+
+        }
+
+        return "";
+
+    },
+
+    getCurrentCompany() {
+
+        if (!this.isProfilePage()) {
+            return null;
+        }
+
+        // Procura primeiro na seção de experiência
+        const companyLinks = document.querySelectorAll('a[href*="/company/"]');
+
+        for (const link of companyLinks) {
+
+            const paragraphs = link.querySelectorAll("p");
+
+            if (paragraphs.length > 0) {
+
+                const name = paragraphs[0].innerText.trim();
+
+                if (name) {
+
+                    return {
+
+                        name,
+                        linkedin: link.href.split("?")[0]
+
+                    };
+
+                }
+
+            }
+
+        }
+
+        // Fallback: cartão superior (quando existir)
+        const companyCard = document.querySelector(
+            'img[src*="company-logo"]'
+        )?.closest('[role="button"]');
+
+        if (companyCard) {
+
+            const name = companyCard.querySelector("span")?.innerText?.trim();
+
+            if (name) {
+
+                return {
+
+                    name,
+                    linkedin: ""
+
+                };
+
+            }
+
+        }
+
+        return null;
 
     },
 
@@ -138,7 +216,9 @@ const PersonDetector = {
 
             photo: this.getPhoto(),
 
-            linkedin
+            linkedin,
+
+            company: this.getCurrentCompany()
 
         };
 
