@@ -115,14 +115,36 @@ function observeInviteButtons() {
 
             if (!person) {
 
-                await People.save({
-                    name: appState.person.name,
-                    jobTitle: appState.person.jobTitle,
-                    linkedin: appState.person.linkedin,
-                    photo: appState.person.photo,
-                    companyName: appState.person.company?.name || "",
-                    companyId: null
-                });
+                let companyId = null;
+
+if (
+    appState.company &&
+    typeof Companies !== "undefined"
+) {
+
+    const company = await Companies.find(
+        appState.company.linkedin
+    );
+
+    companyId = company?.id || null;
+
+}
+
+await People.save({
+
+    name: appState.person.name,
+
+    jobTitle: appState.person.jobTitle,
+
+    linkedin: appState.person.linkedin,
+
+    photo: appState.person.photo,
+
+    companyName: appState.company?.name || "",
+
+    companyId
+
+});
 
                 person = await People.find(appState.person.linkedin);
 
@@ -149,30 +171,6 @@ async function render() {
 
     appState.person = detectPerson();
 
-    // salva automaticamente a pessoa detectada
-    if (
-        appState.person &&
-        typeof People !== "undefined"
-    ) {
-
-        await People.save({
-
-            name: appState.person.name,
-
-            jobTitle: appState.person.jobTitle,
-
-            linkedin: appState.person.linkedin,
-
-            photo: appState.person.photo,
-
-            companyName: appState.person.company?.name || "",
-
-            companyId: null
-
-        });
-
-    }
-
     appState.company = detectCompany();
 
     if (
@@ -184,7 +182,69 @@ async function render() {
         appState.company = appState.person.company;
 
     }
+// ===========================
+// Salva automaticamente a empresa
+// ===========================
 
+if (
+    appState.company &&
+    typeof Companies !== "undefined"
+) {
+
+    const existingCompany = await Companies.find(
+        appState.company.linkedin
+    );
+
+    await Companies.save(
+
+        appState.company,
+
+        existingCompany?.status ?? null
+
+    );
+
+}
+// ===========================
+// Salva automaticamente a pessoa
+// ===========================
+
+if (
+    appState.person &&
+    typeof People !== "undefined"
+) {
+
+    let companyId = null;
+
+    if (
+        appState.company &&
+        typeof Companies !== "undefined"
+    ) {
+
+        const company = await Companies.find(
+            appState.company.linkedin
+        );
+
+        companyId = company?.id || null;
+
+    }
+
+    await People.save({
+
+        name: appState.person.name,
+
+        jobTitle: appState.person.jobTitle,
+
+        linkedin: appState.person.linkedin,
+
+        photo: appState.person.photo,
+
+        companyName: appState.company?.name || "",
+
+        companyId
+
+    });
+
+}
     if (
         typeof Panel !== "undefined" &&
         typeof Panel.render === "function"
