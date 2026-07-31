@@ -4,21 +4,10 @@ const PersonDetector = {
 
         const path = window.location.pathname.toLowerCase();
 
-        if (path.startsWith("/in/")) {
-            return "PROFILE";
-        }
-
-        if (path.startsWith("/search/results/people")) {
-            return "PEOPLE_SEARCH";
-        }
-
-        if (path.startsWith("/mynetwork")) {
-            return "MY_NETWORK";
-        }
-
-        if (path.startsWith("/messaging")) {
-            return "MESSAGING";
-        }
+        if (path.startsWith("/in/")) return "PROFILE";
+        if (path.startsWith("/search/results/people")) return "PEOPLE_SEARCH";
+        if (path.startsWith("/mynetwork")) return "MY_NETWORK";
+        if (path.startsWith("/messaging")) return "MESSAGING";
 
         return "OTHER";
 
@@ -32,9 +21,7 @@ const PersonDetector = {
 
     getLinkedinUrl() {
 
-        if (!this.isProfilePage()) {
-            return null;
-        }
+        if (!this.isProfilePage()) return null;
 
         return window.location.origin + window.location.pathname;
 
@@ -42,18 +29,12 @@ const PersonDetector = {
 
     getPersonName() {
 
-        if (!this.isProfilePage()) {
-            return null;
-        }
+        if (!this.isProfilePage()) return null;
 
         const selectors = [
-
             "h1",
-
             ".text-heading-xlarge",
-
             ".pv-text-details__left-panel h1"
-
         ];
 
         for (const selector of selectors) {
@@ -61,9 +42,7 @@ const PersonDetector = {
             const element = document.querySelector(selector);
 
             if (element?.innerText?.trim()) {
-
                 return element.innerText.trim();
-
             }
 
         }
@@ -74,16 +53,11 @@ const PersonDetector = {
 
     getJobTitle() {
 
-        if (!this.isProfilePage()) {
-            return "";
-        }
+        if (!this.isProfilePage()) return "";
 
         const selectors = [
-
             ".text-body-medium",
-
             ".pv-text-details__left-panel .text-body-medium"
-
         ];
 
         for (const selector of selectors) {
@@ -91,9 +65,7 @@ const PersonDetector = {
             const element = document.querySelector(selector);
 
             if (element?.innerText?.trim()) {
-
                 return element.innerText.trim();
-
             }
 
         }
@@ -104,18 +76,12 @@ const PersonDetector = {
 
     getPhoto() {
 
-        if (!this.isProfilePage()) {
-            return "";
-        }
+        if (!this.isProfilePage()) return "";
 
         const selectors = [
-
             ".pv-top-card-profile-picture__image",
-
             'img[alt*="foto"]',
-
             'img[alt*="Photo"]'
-
         ];
 
         for (const selector of selectors) {
@@ -123,9 +89,7 @@ const PersonDetector = {
             const image = document.querySelector(selector);
 
             if (image?.src) {
-
                 return image.src;
-
             }
 
         }
@@ -140,28 +104,38 @@ const PersonDetector = {
             return null;
         }
 
-        // ==================================================
-        // NOVO LAYOUT DO LINKEDIN
-        // Empresa exibida no topo do perfil
-        // ==================================================
+        // ======================================================
+        // 1 - PROCURA PRIMEIRO NA SEÇÃO EXPERIÊNCIA
+        // ======================================================
 
-        const logo = document.querySelector('img[src*="company-logo"]');
+        const companyLinks = document.querySelectorAll(
+            'a[href*="/company/"]'
+        );
 
-        if (logo) {
+        for (const link of companyLinks) {
 
-            const card = logo.closest('div[role="button"]');
+            const block = link.closest("div");
 
-            if (card) {
+            if (!block) continue;
 
-                const name = card.querySelector("span")?.innerText?.trim();
+            const text = block.innerText.toLowerCase();
 
-                if (name) {
+            // Só aceita vínculos atuais
+            if (
+                text.includes("o momento") ||
+                text.includes("present") ||
+                text.includes("tempo integral") ||
+                text.includes("full-time")
+            ) {
+
+                const companyName =
+                    link.querySelector("p")?.innerText?.trim();
+
+                if (companyName) {
 
                     return {
-
-                        name,
-                        linkedin: ""
-
+                        name: companyName,
+                        linkedin: link.href.split("?")[0]
                     };
 
                 }
@@ -170,35 +144,46 @@ const PersonDetector = {
 
         }
 
-        // ==================================================
-        // LAYOUT ANTIGO
-        // Empresa na seção Experiência
-        // ==================================================
+        // ======================================================
+        // 2 - FALLBACK PARA EMPRESA DO TOPO
+        // ======================================================
 
-        const links = document.querySelectorAll(
-            'a[href*="/company/"]'
+        const topCompany = document.querySelector(
+            'img[src*="company-logo"]'
         );
 
-        for (const link of links) {
+        if (topCompany) {
 
-            const paragraphs = link.querySelectorAll("p");
+            const card = topCompany.closest("[role='button']");
 
-            if (!paragraphs.length) {
-                continue;
+            if (card) {
+
+                const spans = card.querySelectorAll("span");
+
+                for (const span of spans) {
+
+                    const text = span.innerText?.trim();
+
+                    if (!text) continue;
+
+                    if (
+                        text.includes("Universidade") ||
+                        text.includes("University") ||
+                        text.includes("Faculdade") ||
+                        text.includes("School") ||
+                        text.includes("College")
+                    ) {
+                        continue;
+                    }
+
+                    return {
+                        name: text,
+                        linkedin: ""
+                    };
+
+                }
+
             }
-
-            const name = paragraphs[0].innerText.trim();
-
-            if (!name) {
-                continue;
-            }
-
-            return {
-
-                name,
-                linkedin: link.href.split("?")[0]
-
-            };
 
         }
 
@@ -209,17 +194,13 @@ const PersonDetector = {
     getPerson() {
 
         if (!this.isProfilePage()) {
-
             return null;
-
         }
 
         const linkedin = this.getLinkedinUrl();
 
         if (!linkedin) {
-
             return null;
-
         }
 
         return {
