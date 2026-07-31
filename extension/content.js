@@ -31,9 +31,7 @@ function detectCompany() {
         typeof CompanyDetector !== "undefined" &&
         typeof CompanyDetector.getCompany === "function"
     ) {
-
         return CompanyDetector.getCompany();
-
     }
 
     return null;
@@ -46,9 +44,7 @@ function detectPerson() {
         typeof PersonDetector !== "undefined" &&
         typeof PersonDetector.getPerson === "function"
     ) {
-
         return PersonDetector.getPerson();
-
     }
 
     return null;
@@ -57,7 +53,7 @@ function detectPerson() {
 
 async function syncConnectionStatus() {
 
-    if (!appState.person) return;
+    if (!appState.person || typeof Connections === "undefined") return;
 
     clearTimeout(connectionSyncTimeout);
 
@@ -108,15 +104,29 @@ function observeInviteButtons() {
         const text = button.innerText.trim();
 
         if (
-            text === "Enviar sem nota" ||
-            text === "Enviar"
+            text === "Enviar" ||
+            text === "Enviar sem nota"
         ) {
 
             if (!appState.person) return;
 
-            const person = await People.find(
-                appState.person.linkedin
-            );
+            // garante que a pessoa esteja salva
+            let person = await People.find(appState.person.linkedin);
+
+            if (!person) {
+
+                await People.save({
+                    name: appState.person.name,
+                    jobTitle: appState.person.jobTitle,
+                    linkedin: appState.person.linkedin,
+                    photo: appState.person.photo,
+                    companyName: appState.person.company?.name || "",
+                    companyId: null
+                });
+
+                person = await People.find(appState.person.linkedin);
+
+            }
 
             if (!person) return;
 
@@ -125,10 +135,7 @@ function observeInviteButtons() {
                 "INVITED"
             );
 
-            console.log(
-                "Convite enviado:",
-                person.name
-            );
+            console.log("Convite enviado:", person.name);
 
         }
 
@@ -136,11 +143,35 @@ function observeInviteButtons() {
 
 }
 
-function render() {
+async function render() {
 
     appState.page = detectPage();
 
     appState.person = detectPerson();
+
+    // salva automaticamente a pessoa detectada
+    if (
+        appState.person &&
+        typeof People !== "undefined"
+    ) {
+
+        await People.save({
+
+            name: appState.person.name,
+
+            jobTitle: appState.person.jobTitle,
+
+            linkedin: appState.person.linkedin,
+
+            photo: appState.person.photo,
+
+            companyName: appState.person.company?.name || "",
+
+            companyId: null
+
+        });
+
+    }
 
     appState.company = detectCompany();
 
@@ -176,7 +207,7 @@ function render() {
         appState.person
     ) {
 
-        syncConnectionStatus();
+        await syncConnectionStatus();
 
     }
 
@@ -186,13 +217,13 @@ function refresh(force = false) {
 
     clearTimeout(refreshTimeout);
 
-    refreshTimeout = setTimeout(() => {
+    refreshTimeout = setTimeout(async () => {
 
         const url = window.location.href;
 
         if (!force && url === appState.currentUrl) {
 
-            render();
+            await render();
 
             return;
 
@@ -200,7 +231,7 @@ function refresh(force = false) {
 
         appState.currentUrl = url;
 
-        render();
+        await render();
 
     }, 200);
 
@@ -247,11 +278,11 @@ function observeNavigation() {
 
 }
 
-function init() {
+async function init() {
 
     appState.currentUrl = window.location.href;
 
-    render();
+    await render();
 
     observeNavigation();
 
