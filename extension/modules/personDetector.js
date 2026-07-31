@@ -104,45 +104,63 @@ const PersonDetector = {
             return null;
         }
 
-        // ======================================================
-        // 1 - PROCURA PRIMEIRO NA SEÇÃO EXPERIÊNCIA
-        // ======================================================
+// ======================================================
+// 1 - PROCURA A EMPRESA NO CABEÇALHO DA EXPERIÊNCIA
+// ======================================================
 
-        const companyLinks = document.querySelectorAll(
-            'a[href*="/company/"]'
-        );
+const experienceItems = document.querySelectorAll(
+    'a[href*="/company/"]'
+);
 
-        for (const link of companyLinks) {
+const processed = new Set();
 
-            const block = link.closest("div");
+for (const link of experienceItems) {
 
-            if (!block) continue;
+    const href = link.href.split("?")[0];
 
-            const text = block.innerText.toLowerCase();
+    if (processed.has(href)) continue;
 
-            // Só aceita vínculos atuais
-            if (
-                text.includes("o momento") ||
-                text.includes("present") ||
-                text.includes("tempo integral") ||
-                text.includes("full-time")
-            ) {
+    processed.add(href);
 
-                const companyName =
-                    link.querySelector("p")?.innerText?.trim();
+    const text = link.innerText.trim();
 
-                if (companyName) {
+    if (!text) continue;
 
-                    return {
-                        name: companyName,
-                        linkedin: link.href.split("?")[0]
-                    };
+    const parentText =
+        link.closest("div")?.innerText?.toLowerCase() || "";
 
-                }
+    if (
+        !parentText.includes("o momento") &&
+        !parentText.includes("present")
+    ) {
+        continue;
+    }
 
-            }
+    // Ignora links cujo texto é um cargo
+    if (
+        text.startsWith("Diretor") ||
+        text.startsWith("Director") ||
+        text.startsWith("Gerente") ||
+        text.startsWith("Manager") ||
+        text.startsWith("Coordenador") ||
+        text.startsWith("Analista") ||
+        text.startsWith("Especialista") ||
+        text.startsWith("CEO") ||
+        text.startsWith("CTO") ||
+        text.startsWith("CFO")
+    ) {
+        continue;
+    }
 
-        }
+    return {
+
+        name: text.split("\n")[0].trim(),
+
+        linkedin: href
+
+    };
+
+}
 
         // ======================================================
         // 2 - FALLBACK PARA EMPRESA DO TOPO

@@ -59,37 +59,64 @@ async function syncConnectionStatus() {
 
     connectionSyncTimeout = setTimeout(async () => {
 
-        const buttons = [...document.querySelectorAll("button")];
-
-        const hasPending = buttons.some(button =>
-            ["Pendente", "Pending"].includes(button.innerText.trim())
+        const connection = await Connections.find(
+            appState.person.linkedin
         );
 
-        const hasMessage = buttons.some(button =>
-            ["Mensagem", "Message"].includes(button.innerText.trim())
-        );
+        // Não existe convite registrado pela extensão.
+        // Não faz nada.
+        if (!connection) return;
 
-        if (hasPending) {
+        // ----------------------------
+        // Primeira conexão (1º)
+        // ----------------------------
 
-            await Connections.updateStatus(
-                appState.person.linkedin,
-                "INVITED"
+        const firstDegree = [...document.querySelectorAll("p, span")].some(el => {
+
+            const text = el.innerText?.trim();
+
+            return (
+                text === "· 1º" ||
+                text === "1º"
             );
 
-            return;
+        });
 
-        }
+        // ----------------------------
+        // Botão Enviar mensagem
+        // ----------------------------
 
-        if (hasMessage) {
+        const hasMessage = [...document.querySelectorAll("button")].some(button => {
+
+            const text = button.innerText.trim().toLowerCase();
+
+            return (
+                text === "mensagem" ||
+                text === "message" ||
+                text === "enviar mensagem" ||
+                text === "send message"
+            );
+
+        });
+
+        if (
+            firstDegree ||
+            hasMessage
+        ) {
 
             await Connections.updateStatus(
                 appState.person.linkedin,
                 "CONNECTED"
             );
 
+            await People.updateConnectionStatus(
+                appState.person.linkedin,
+                "CONNECTED"
+            );
+
         }
 
-    }, 500);
+    }, 600);
 
 }
 
@@ -101,65 +128,93 @@ function observeInviteButtons() {
 
         if (!button) return;
 
-        const text = button.innerText.trim();
+        const text = button.innerText.trim().toLowerCase();
 
+        // Apenas o clique em Conectar cria um convite.
         if (
-            text === "Enviar" ||
-            text === "Enviar sem nota"
+            text !== "conectar" &&
+            text !== "connect"
+        ) {
+            return;
+        }
+
+        if (!appState.person) return;
+
+        // garante que a empresa exista
+        if (
+            appState.company &&
+            typeof Companies !== "undefined"
         ) {
 
-            if (!appState.person) return;
-
-            // garante que a pessoa esteja salva
-            let person = await People.find(appState.person.linkedin);
-
-            if (!person) {
-
-                let companyId = null;
-
-if (
-    appState.company &&
-    typeof Companies !== "undefined"
-) {
-
-    const company = await Companies.find(
-        appState.company.linkedin
-    );
-
-    companyId = company?.id || null;
-
-}
-
-await People.save({
-
-    name: appState.person.name,
-
-    jobTitle: appState.person.jobTitle,
-
-    linkedin: appState.person.linkedin,
-
-    photo: appState.person.photo,
-
-    companyName: appState.company?.name || "",
-
-    companyId
-
-});
-
-                person = await People.find(appState.person.linkedin);
-
-            }
-
-            if (!person) return;
-
-            await Connections.save(
-                person,
-                "INVITED"
+            const existingCompany = await Companies.find(
+                appState.company.linkedin
             );
 
-            console.log("Convite enviado:", person.name);
+            await Companies.save(
+                appState.company,
+                existingCompany?.status ?? null
+            );
 
         }
+
+        // garante companyId
+        let companyId = null;
+
+        if (
+            appState.company &&
+            typeof Companies !== "undefined"
+        ) {
+
+            const company = await Companies.find(
+                appState.company.linkedin
+            );
+
+            companyId = company?.id || null;
+
+        }
+
+        // garante pessoa
+        await People.save({
+
+            name: appState.person.name,
+            jobTitle: appState.person.jobTitle,
+            linkedin: appState.person.linkedin,
+            photo: appState.person.photo,
+            companyName: appState.company?.name || "",
+            companyId
+
+        });
+
+        const person = await People.find(
+            appState.person.linkedin
+        );
+
+        if (!person) return;
+
+        // Evita duplicidade
+        const existingConnection = await Connections.find(
+            person.linkedin
+        );
+
+        if (existingConnection) {
+
+            console.log("Convite já registrado.");
+
+            return;
+
+        }
+
+        await Connections.save(
+            person,
+            "INVITED"
+        );
+
+        await People.updateConnectionStatus(
+            person.linkedin,
+            "INVITED"
+        );
+
+        console.log("Convite registrado:", person.name);
 
     });
 
